@@ -1,15 +1,19 @@
 <div align="center">
-
-<img src="repo.png" alt="logo" width="200"/>
-
-# st-hydro-bengawansolo-ssfuns2026
-
-Submission for the **SSDS UNS 2026** data science competition: predicting
-**Tinggi Muka Air (TMA)** (river water level, in m.dpl) and discharge for
-30 monitoring stations across the **Bengawan Solo** watershed.
-
-Evaluation metric: **Root Mean Squared Error (RMSE)** per station.
-
+  <img src="repo.png" alt="Logo" width="128" height="128">
+  
+  # st-hydro-bengawansolo-ssfuns2026
+  **Spatio-Temporal Water Level (TMA) & Discharge Forecasting**
+  
+  <p align="center">
+    <img src="https://img.shields.io/badge/Competition-SSDS_UNS_2026-blue?style=flat-square" alt="Competition">
+    <img src="https://img.shields.io/badge/Language-Python_3-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+    <img src="https://img.shields.io/badge/Model-NNLS_Ensemble_&_LightGBM-4CAF50?style=flat-square" alt="Model">
+    <img src="https://img.shields.io/badge/Status-Completed-success?style=flat-square" alt="Status">
+  </p>
+  
+  <p align="center">
+    Submission for the <b>SSDS UNS 2026</b> data science competition: predicting <b>Tinggi Muka Air (TMA)</b> (river water level, in m.dpl) and discharge for 30 monitoring stations across the <b>Bengawan Solo</b> watershed using spatio-temporal modeling and ensemble stacking.
+  </p>
 </div>
 
 ## Tech Stack
