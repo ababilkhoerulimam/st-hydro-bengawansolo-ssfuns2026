@@ -1,0 +1,22 @@
+# Core data science
+numpy
+pandas
+scipy
+scikit-learn
+
+# Gradient boosting
+lightgbm
+xgboost
+catboost
+
+# Visualisation
+matplotlib
+seaborn
+
+# Geospatial (HydroRIVERS shapefiles)
+geopandas
+pyshp
+
+# Jupyter
+notebook
+ipykernel

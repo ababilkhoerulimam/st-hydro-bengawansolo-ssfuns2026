@@ -1,1 +1,108 @@
 # SSDS-UNS-2026
+
+Submission for the **SSDS UNS 2026** data science competition: predicting
+**Tinggi Muka Air (TMA)** (river water level, in m.dpl) and discharge for
+30 monitoring stations across the **Bengawan Solo** watershed.
+
+Evaluation metric: **Root Mean Squared Error (RMSE)** per station.
+
+---
+
+## Notebooks
+
+| Notebook | Approach |
+|---|---|
+| [`Renang Data_NNLS Bootsrap.ipynb`](Renang%20Data_NNLS%20Bootsrap.ipynb) | NNLS Global Ensemble + Selective Guardrail Clipping |
+| [`Renang Data_Residual LGBM.ipynb`](Renang%20Data_Residual%20LGBM.ipynb) | NNLS Ensemble + Residual LightGBM Stacker |
+
+Both notebooks share the same data ingestion and EDA pipeline; the modelling
+head is the key difference.
+
+---
+
+## Data Sources
+
+> **Note:** Large data files are excluded from this repository via `.gitignore`.
+> Download them separately and place them at the paths below.
+
+| File | Path | Source |
+|---|---|---|
+| Training observations | `train.csv` | Competition page |
+| Test observations | `test.csv` | Competition page |
+| Sample submission | `sample_submission.csv` | Competition page |
+| Environmental features | `data_pendukung/data_lingkungan.csv` | Competition page |
+| Station coordinates | `data_pendukung/koordinat_pos.csv` | Competition page |
+| HydroRIVERS shapefile (AU) | `data_pendukung/HydroRIVERS_v10_au_shp/` | [HydroSHEDS](https://www.hydrosheds.org/) |
+| HydroRIVERS technical doc | `data_pendukung/HydroRIVERS_TechDoc_v10.pdf` | [HydroSHEDS](https://www.hydrosheds.org/) |
+
+Expected working-directory structure:
+
+```
+ssds-uns-2026/
+├── train.csv
+├── test.csv
+├── sample_submission.csv
+├── data_pendukung/
+│   ├── data_lingkungan.csv
+│   ├── koordinat_pos.csv
+│   └── HydroRIVERS_v10_au_shp/
+│       ├── HydroRIVERS_v10_au.shp
+│       └── ...
+├── Renang Data_NNLS Bootsrap.ipynb
+├── Renang Data_Residual LGBM.ipynb
+└── docs/
+    └── Renang Data_Pakta Integritas.pdf
+```
+
+---
+
+## Environment Setup
+
+```bash
+pip install -r requirements.txt
+```
+
+Notebooks were developed with **Python 3** and Jupyter.
+
+---
+
+## Modelling Overview
+
+### Common Pipeline
+
+1. **Data Ingestion** — Load `train.csv`, `test.csv`, `data_lingkungan.csv`,
+   `koordinat_pos.csv`; parse ISO datetimes; enforce chronological order.
+2. **Structural Diagnostics** — Validate 6-hourly observation grid completeness
+   per station; flag missing timestamps.
+3. **EDA & Anomaly Audit** — Per-station TMA statistics; environmental feature
+   missingness; train/test distribution drift (KS test).
+4. **Feature Engineering** — Temporal features, lag/rolling statistics,
+   geospatial features from HydroRIVERS, environmental covariates.
+5. **Base Model Training** — Multiple base regressors trained per station
+   (or globally with station embeddings).
+6. **NNLS Ensemble** — Non-Negative Least Squares optimisation of base-model
+   weights to minimise global RMSE.
+
+### NNLS Bootstrap (`Renang Data_NNLS Bootsrap.ipynb`)
+
+Extends the NNLS ensemble with **bootstrapped weight estimation** and
+**Selective Guardrail Clipping** post-processing to suppress physically
+implausible predictions.
+
+### Residual LGBM Stacker (`Renang Data_Residual LGBM.ipynb`)
+
+Adds a **LightGBM residual correction** layer on top of the NNLS ensemble:
+the LGBM model learns to predict the residual between the ensemble output and
+ground truth, with the corrected prediction clipped to physically valid ranges.
+
+---
+
+## Documentation
+
+- [`docs/Renang Data_Pakta Integritas.pdf`](docs/Renang%20Data_Pakta%20Integritas.pdf) — Competition integrity pledge (Pakta Integritas)
+
+---
+
+## License
+
+See [LICENSE](LICENSE).
