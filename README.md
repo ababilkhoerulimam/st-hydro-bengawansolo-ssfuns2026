@@ -1,3 +1,5 @@
+<div align="center">
+
 # SSDS-UNS-2026
 
 Submission for the **SSDS UNS 2026** data science competition: predicting
@@ -6,7 +8,16 @@ Submission for the **SSDS UNS 2026** data science competition: predicting
 
 Evaluation metric: **Root Mean Squared Error (RMSE)** per station.
 
----
+</div>
+
+## Tech Stack
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
+![Pandas](https://img.shields.io/badge/pandas-%23150458.svg?style=for-the-badge&logo=pandas&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-%23F7931E.svg?style=for-the-badge&logo=scikit-learn&logoColor=white)
+![Matplotlib](https://img.shields.io/badge/Matplotlib-%23ffffff.svg?style=for-the-badge&logo=Matplotlib&logoColor=black)
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
 
 ## Notebooks
 
@@ -17,8 +28,6 @@ Evaluation metric: **Root Mean Squared Error (RMSE)** per station.
 
 Both notebooks share the same data ingestion and EDA pipeline; the modelling
 head is the key difference.
-
----
 
 ## Data Sources
 
@@ -54,8 +63,6 @@ ssds-uns-2026/
     └── Renang Data_Pakta Integritas.pdf
 ```
 
----
-
 ## Environment Setup
 
 ```bash
@@ -63,8 +70,6 @@ pip install -r requirements.txt
 ```
 
 Notebooks were developed with **Python 3** and Jupyter.
-
----
 
 ## Modelling Overview
 
@@ -95,13 +100,9 @@ Adds a **LightGBM residual correction** layer on top of the NNLS ensemble:
 the LGBM model learns to predict the residual between the ensemble output and
 ground truth, with the corrected prediction clipped to physically valid ranges.
 
----
-
 ## Documentation
 
 - [`docs/Renang Data_Pakta Integritas.pdf`](docs/Renang%20Data_Pakta%20Integritas.pdf) — Competition integrity pledge (Pakta Integritas)
-
----
 
 ## License
 
