@@ -55,9 +55,9 @@ The Bengawan Solo watershed is modeled as a directed acyclic graph (DAG) derived
 
 The feature pipeline produces structured representations across four major categories:
 
-* **Autoregressive & Momentum Features**: Station-specific historical water level lags ($t-6\text{h}$, $t-12\text{h}$, $t-18\text{h}$, $t-24\text{h}$, $t-48\text{h}$), moving averages, rolling standard deviations, and exponential moving momentum.
+* **Autoregressive & Momentum Features**: Station-specific historical water level lags (t-6h, t-12h, t-18h, t-24h, t-48h), moving averages, rolling standard deviations, and exponential moving momentum.
 * **Hydro-Meteorological Covariates**: Multi-depth soil moisture (`soil_moisture_0_7cm`, `soil_moisture_7_28cm`), evapotranspiration, rainfall volume, and upstream aggregated precipitation.
-* **Temporal & Cyclical Encodings**: Hour-of-day and day-of-year cyclical trigonometric representations ($\sin / \cos$), monsoon seasonality indices, and El Nino Oceanic Nino Index (ONI) clipping.
+* **Temporal & Cyclical Encodings**: Hour-of-day and day-of-year cyclical trigonometric representations (sine and cosine encodings), monsoon seasonality indices, and El Nino Oceanic Nino Index (ONI) clipping.
 * **Station Embeddings & Specific Calibrations**: Target-encoded station indicators, elevation differentials, and specialized parameters for controlled reservoirs (Wonogiri Dam release weights).
 
 ### 3. Multi-Tier Ensemble & Residual Stacking
@@ -65,20 +65,37 @@ The feature pipeline produces structured representations across four major categ
 The project evaluates two distinct ensemble architectures:
 
 #### Approach A: NNLS Bootstrap Ensemble (`Renang Data_NNLS Bootsrap.ipynb`)
+
 Combines predictions from diverse base regressors using constrained optimization:
-$$\min_{\mathbf{w} \ge 0} \|\mathbf{y} - \mathbf{A}\mathbf{w}\|_2^2 \quad \text{subject to} \quad \sum_{i} w_i = 1$$
+
+$$
+\min_{\mathbf{w} \ge 0} \|\mathbf{y} - \mathbf{A}\mathbf{w}\|_2^2 \quad \text{subject to} \quad \sum_{i} w_i = 1
+$$
+
 Where $\mathbf{A}$ is the matrix of out-of-fold base model predictions. Non-negativity constraints prevent destructive negative weighting caused by multicollinearity. Bootstrap resamplings of $\mathbf{A}$ are used to generate robust model weight distributions.
 
 #### Approach B: Residual LightGBM Stacker (`Renang Data_Residual LGBM.ipynb`)
+
 Extends the NNLS global ensemble by modeling residual prediction error:
-$$e = y_{\text{true}} - \hat{y}_{\text{NNLS}}$$
+
+$$
+e = y_{\text{true}} - \hat{y}_{\text{NNLS}}
+$$
+
 A second-level LightGBM regressor is trained on the residual target using environmental covariates and interaction features. The final prediction combines the linear ensemble with the learned non-linear correction:
-$$\hat{y}_{\text{final}} = \hat{y}_{\text{NNLS}} + \hat{e}_{\text{LGBM}}$$
+
+$$
+\hat{y}_{\text{final}} = \hat{y}_{\text{NNLS}} + \hat{e}_{\text{LGBM}}
+$$
 
 ### 4. Post-Processing: Selective Guardrails
 
 To protect against catastrophic extrapolation during multi-step inference, an empirical guardrail mechanism clips final forecasts to physical domain bounds:
-$$\hat{y}_{\text{clipped}} = \text{clip}\left(\hat{y}_{\text{final}}, \;\text{train\_min}_s - \Delta_s, \;\text{train\_max}_s + \Delta_s\right)$$
+
+$$
+\hat{y}_{\text{clipped}} = \text{clip}\left(\hat{y}_{\text{final}}, \;\text{train\_min}_s - \Delta_s, \;\text{train\_max}_s + \Delta_s\right)
+$$
+
 Where $\Delta_s$ is a station-specific safety margin proportional to historical seasonal variance.
 
 ## Notebooks
