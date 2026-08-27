@@ -75,17 +75,17 @@ Notebooks were developed with **Python 3** and Jupyter.
 
 ### Common Pipeline
 
-1. **Data Ingestion** — Load `train.csv`, `test.csv`, `data_lingkungan.csv`,
+1. **Data Ingestion** - Load `train.csv`, `test.csv`, `data_lingkungan.csv`,
    `koordinat_pos.csv`; parse ISO datetimes; enforce chronological order.
-2. **Structural Diagnostics** — Validate 6-hourly observation grid completeness
+2. **Structural Diagnostics** - Validate 6-hourly observation grid completeness
    per station; flag missing timestamps.
-3. **EDA & Anomaly Audit** — Per-station TMA statistics; environmental feature
+3. **EDA & Anomaly Audit** - Per-station TMA statistics; environmental feature
    missingness; train/test distribution drift (KS test).
-4. **Feature Engineering** — Temporal features, lag/rolling statistics,
+4. **Feature Engineering** - Temporal features, lag/rolling statistics,
    geospatial features from HydroRIVERS, environmental covariates.
-5. **Base Model Training** — Multiple base regressors trained per station
+5. **Base Model Training** - Multiple base regressors trained per station
    (or globally with station embeddings).
-6. **NNLS Ensemble** — Non-Negative Least Squares optimisation of base-model
+6. **NNLS Ensemble** - Non-Negative Least Squares optimisation of base-model
    weights to minimise global RMSE.
 
 ### NNLS Bootstrap (`Renang Data_NNLS Bootsrap.ipynb`)
@@ -102,7 +102,7 @@ ground truth, with the corrected prediction clipped to physically valid ranges.
 
 ## Documentation
 
-- [`docs/Renang Data_Pakta Integritas.pdf`](docs/Renang%20Data_Pakta%20Integritas.pdf) — Competition integrity pledge (Pakta Integritas)
+- [`docs/Renang Data_Pakta Integritas.pdf`](docs/Renang%20Data_Pakta%20Integritas.pdf) - Competition integrity pledge (Pakta Integritas)
 
 ## License
 
