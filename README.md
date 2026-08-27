@@ -27,55 +27,19 @@
 
 ## System Architecture
 
-```
-+-----------------------------------------------------------------------------+
-|                        1. DATA INGESTION & HYDROGRAPHY                      |
-|  - 30 Monitoring Stations (6-hourly TMA grid)                                |
-|  - Environmental covariates (rainfall, soil moisture, evaporation)          |
-|  - HydroRIVERS topological routing graph & upstream catchment aggregation   |
-+-----------------------------------------------------------------------------+
-                                       |
-                                       v
-+-----------------------------------------------------------------------------+
-|                     2. SPATIO-TEMPORAL FEATURE ENGINEERING                  |
-|  - Autoregressive lags (t-6h, t-12h, t-24h, t-48h) & rolling statistics     |
-|  - Spatial upstream-downstream travel time flow routing features            |
-|  - Diurnal cyclical encodings & climate index calibration (El Nino index)   |
-|  - Special station heuristics (Wonogiri Dam grid search, Gunungsari)        |
-+-----------------------------------------------------------------------------+
-                                       |
-                                       v
-+-----------------------------------------------------------------------------+
-|                         3. TIER 1: BASE MODEL SUITE                         |
-|  - Gradient Boosting Trees: XGBoost (MSE & Quantile losses), LightGBM,      |
-|    CatBoost Regressors                                                      |
-|  - Linear Baselines & Regularized Regressors                                |
-|  - Two-Fold Chronological Temporal Cross-Validation                         |
-+-----------------------------------------------------------------------------+
-                                       |
-                                       v
-+-----------------------------------------------------------------------------+
-|               4. TIER 2: NON-NEGATIVE LEAST SQUARES (NNLS) ENSEMBLE         |
-|  - Solves min ||y - A w||^2 s.t. w >= 0, sum(w) = 1                         |
-|  - Eliminates destructive collinearity across base models                   |
-|  - Bootstrapped weight sampling for out-of-distribution stability           |
-+-----------------------------------------------------------------------------+
-                                       |
-                                       v
-+-----------------------------------------------------------------------------+
-|                 5. TIER 3: RESIDUAL LIGHTGBM STACKER (EXP048)               |
-|  - Residual target: e = y_true - y_pred_nnls                                |
-|  - Second-level LightGBM learns systematic non-linear residual errors       |
-|  - Final forecast: y_final = y_pred_nnls + e_pred                           |
-+-----------------------------------------------------------------------------+
-                                       |
-                                       v
-+-----------------------------------------------------------------------------+
-|                   6. POST-PROCESSING: SELECTIVE GUARDRAIL                   |
-|  - Empirical station-specific physical elevation boundary clipping          |
-|  - [train_min - Delta_s, train_max + Delta_s] bounds to suppress anomalies  |
-+-----------------------------------------------------------------------------+
-```
+The forecasting architecture is organized into an end-to-end multi-stage pipeline designed for spatio-temporal water level prediction:
+
+1. **Data Ingestion and Hydrography**: Ingests 6-hourly observation grids across 30 monitoring stations alongside environmental covariates (rainfall, soil moisture, evaporation). The network is aligned with the HydroSHEDS HydroRIVERS hydrographic vector dataset to establish topological routing and spatial catchment boundaries.
+
+2. **Spatio-Temporal Feature Engineering**: Constructs multi-scale temporal lags, rolling momentum statistics, and spatial upstream-downstream travel time flow delays. Incorporates diurnal solar cycles, monsoon seasonality, climate indices (El Nino ONI), and reservoir heuristics such as Wonogiri Dam release calibration.
+
+3. **Tier 1 Base Model Suite**: Trains diverse gradient boosted decision tree regressors (XGBoost with MSE and Quantile loss formulations, LightGBM, CatBoost) alongside regularized linear baselines using two-fold chronological temporal cross-validation.
+
+4. **Tier 2 Non-Negative Least Squares (NNLS) Ensemble**: Optimizes global ensemble weights subject to non-negativity constraints to prevent destructive interference and collinearity distortion across base model predictions. Uses bootstrap weight sampling for out-of-distribution stability.
+
+5. **Tier 3 Residual LightGBM Stacker**: Models systematic non-linear residual errors between the ground truth and the linear NNLS ensemble output. A second-level LightGBM regressor learns residual corrections to produce the augmented forecast.
+
+6. **Post-Processing Selective Guardrails**: Applies station-specific empirical boundary clipping derived from historical physical elevation limits to prevent unconstrained extrapolation during long-horizon test forecasting.
 
 ## Modelling Methodology
 
@@ -91,7 +55,7 @@ The Bengawan Solo watershed is modeled as a directed acyclic graph (DAG) derived
 
 The feature pipeline produces structured representations across four major categories:
 
-* **Autoregressive & Momentum Features**: Station-specific historical water level lags ($t-6	ext{h}$, $t-12	ext{h}$, $t-18	ext{h}$, $t-24	ext{h}$, $t-48	ext{h}$), moving averages, rolling standard deviations, and exponential moving momentum.
+* **Autoregressive & Momentum Features**: Station-specific historical water level lags ($t-6\text{h}$, $t-12\text{h}$, $t-18\text{h}$, $t-24\text{h}$, $t-48\text{h}$), moving averages, rolling standard deviations, and exponential moving momentum.
 * **Hydro-Meteorological Covariates**: Multi-depth soil moisture (`soil_moisture_0_7cm`, `soil_moisture_7_28cm`), evapotranspiration, rainfall volume, and upstream aggregated precipitation.
 * **Temporal & Cyclical Encodings**: Hour-of-day and day-of-year cyclical trigonometric representations ($\sin / \cos$), monsoon seasonality indices, and El Nino Oceanic Nino Index (ONI) clipping.
 * **Station Embeddings & Specific Calibrations**: Target-encoded station indicators, elevation differentials, and specialized parameters for controlled reservoirs (Wonogiri Dam release weights).
@@ -102,19 +66,19 @@ The project evaluates two distinct ensemble architectures:
 
 #### Approach A: NNLS Bootstrap Ensemble (`Renang Data_NNLS Bootsrap.ipynb`)
 Combines predictions from diverse base regressors using constrained optimization:
-$$\min_{\mathbf{w} \ge 0} \|\mathbf{y} - \mathbf{A}\mathbf{w}\|_2^2 \quad 	ext{subject to} \quad \sum_{i} w_i = 1$$
+$$\min_{\mathbf{w} \ge 0} \|\mathbf{y} - \mathbf{A}\mathbf{w}\|_2^2 \quad \text{subject to} \quad \sum_{i} w_i = 1$$
 Where $\mathbf{A}$ is the matrix of out-of-fold base model predictions. Non-negativity constraints prevent destructive negative weighting caused by multicollinearity. Bootstrap resamplings of $\mathbf{A}$ are used to generate robust model weight distributions.
 
 #### Approach B: Residual LightGBM Stacker (`Renang Data_Residual LGBM.ipynb`)
 Extends the NNLS global ensemble by modeling residual prediction error:
-$$e = y_{	ext{true}} - \hat{y}_{	ext{NNLS}}$$
+$$e = y_{\text{true}} - \hat{y}_{\text{NNLS}}$$
 A second-level LightGBM regressor is trained on the residual target using environmental covariates and interaction features. The final prediction combines the linear ensemble with the learned non-linear correction:
-$$\hat{y}_{	ext{final}} = \hat{y}_{	ext{NNLS}} + \hat{e}_{	ext{LGBM}}$$
+$$\hat{y}_{\text{final}} = \hat{y}_{\text{NNLS}} + \hat{e}_{\text{LGBM}}$$
 
 ### 4. Post-Processing: Selective Guardrails
 
 To protect against catastrophic extrapolation during multi-step inference, an empirical guardrail mechanism clips final forecasts to physical domain bounds:
-$$\hat{y}_{	ext{clipped}} = 	ext{clip}\left(\hat{y}_{	ext{final}}, \;	ext{train\_min}_s - \Delta_s, \;	ext{train\_max}_s + \Delta_sight)$$
+$$\hat{y}_{\text{clipped}} = \text{clip}\left(\hat{y}_{\text{final}}, \;\text{train\_min}_s - \Delta_s, \;\text{train\_max}_s + \Delta_s\right)$$
 Where $\Delta_s$ is a station-specific safety margin proportional to historical seasonal variance.
 
 ## Notebooks
