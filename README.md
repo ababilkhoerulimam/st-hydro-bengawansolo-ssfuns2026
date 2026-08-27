@@ -93,7 +93,7 @@ $$
 To protect against catastrophic extrapolation during multi-step inference, an empirical guardrail mechanism clips final forecasts to physical domain bounds:
 
 $$
-\hat{y}_{\text{clipped}} = \text{clip}\left(\hat{y}_{\text{final}}, \;\text{train\_min}_s - \Delta_s, \;\text{train\_max}_s + \Delta_s\right)
+\hat{y}_{\text{clipped}} = \text{clip}\left(\hat{y}_{\text{final}}, \; y_{\text{min}, s} - \Delta_s, \; y_{\text{max}, s} + \Delta_s\right)
 $$
 
 Where $\Delta_s$ is a station-specific safety margin proportional to historical seasonal variance.
