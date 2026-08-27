@@ -1,6 +1,8 @@
 <div align="center">
 
-# SSDS-UNS-2026
+<img src="repo.png" alt="logo" width="200"/>
+
+# st-hydro-bengawansolo-ssfuns2026
 
 Submission for the **SSDS UNS 2026** data science competition: predicting
 **Tinggi Muka Air (TMA)** (river water level, in m.dpl) and discharge for
@@ -11,6 +13,7 @@ Evaluation metric: **Root Mean Squared Error (RMSE)** per station.
 </div>
 
 ## Tech Stack
+
 
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![NumPy](https://img.shields.io/badge/numpy-%23013243.svg?style=for-the-badge&logo=numpy&logoColor=white)
